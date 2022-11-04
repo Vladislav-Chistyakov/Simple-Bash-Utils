@@ -13,6 +13,7 @@ int main(int argc, char *argv[]) {
   int flag_n = 0;
   int flag_e = 0;
   int flag_t = 0;
+  int flag_v = 0;
 
   int flagNumberOutput = 0;
   int flagBufferOne = 0;
@@ -28,7 +29,7 @@ int main(int argc, char *argv[]) {
   };
 
   if (argc != 1) {
-    while (test == 0 && (val = getopt_long(argc, argv, "ETtensb", long_options,
+    while (test == 0 && (val = getopt_long(argc, argv, "ETtensbv", long_options,
                                            NULL)) != EOF) {
       switch (val) {
         case 'b':
@@ -43,6 +44,9 @@ int main(int argc, char *argv[]) {
           break;
         case 's':
           flag_s++;
+          break;
+        case 'v':
+          flag_v++;
           break;
         case 'T':
         case 't':
@@ -66,11 +70,79 @@ int main(int argc, char *argv[]) {
     if ((fp = fopen(argv[argFile], "r")) == NULL) {
       perror("Error file");
       exit(0);
-    } else {
+    } 
+
+    // flag_V
+    printf("!!!!");
+
+    // if (flag_v) {
+    //   int index = 0;
+    //   char simb;
+
+    //   while ((simb = getc(fp)) != EOF) {
+    //     // if ((simb < 32 && simb > 0) && (simb != 9 && simb != 10)) {
+    //     //   // if (simb == 127) {
+    //     //   //   simb = '?';
+    //     //   // }
+    //     //   bufferOne[index] = simb;
+    //     // } else {
+    //       bufferOne[index] = simb;
+    //     // }
+    //     index++;
+    //   }
+    //   flagBufferOne = 1;
+    // }
+
+    if (flag_v) {
+        int index = 0;
+        char simb;
+
+        while ((simb = getc(fp)) != EOF) {
+          int numberSimb = simb;
+          if (numberSimb < 32 &&
+            numberSimb > 0 &&
+            numberSimb != 9 &&
+            numberSimb != 10 && 
+            numberSimb != 127) {
+            simb = numberSimb + 64;
+            bufferOne[index] = simb;
+          } else {
+            bufferOne[index] = simb;
+          }
+          printf("%c", bufferOne[index]);
+          index++;
+        }
     }
 
     // flag S
-    if (flag_s) {
+    if (flag_s && flagBufferOne) {
+      int indexOne = 0;
+      int index = 0;
+      int flagTest = 0;
+      char simb;
+
+
+      while (bufferOne[indexOne] != '\0') {
+        simb = bufferOne[indexOne];
+        if (simb != '\0') {
+          if (simb != '\n') {
+            flagTest = 0;
+            bufferTwo[index] = simb;
+            index++;
+          } else if (simb == '\n' && flagTest < 2) {
+            bufferTwo[index] = simb;
+            index++;
+            flagTest = flagTest + 1;
+          } else {
+            flagTest = flagTest + 1;
+          }
+        }
+        indexOne++;
+      }
+      strcpy(bufferOne, bufferTwo);
+      strcpy(bufferTwo, emptyArray);
+      flagBufferOne = 1;
+    } else if (flag_s) {
       int index = 0;
       int flagTest = 0;
       char simb;
@@ -254,7 +326,6 @@ int main(int argc, char *argv[]) {
     }
     if (flagNumberOutput == 0) {
       printf("%s", bufferOne);
-      // printf("%d", flagBufferOne);
     }
 
     fclose(fp);
