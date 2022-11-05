@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 int main(int argc, char *argv[]) {
   int val;
   int test = 0;
@@ -72,13 +71,11 @@ int main(int argc, char *argv[]) {
   int string_new = 0;
   // int string_old = 0;
 
-
   // Проверка на сущетсвование файла
   if ((fp = fopen(argv[argFile], "r")) == NULL) {
     perror("Error file");
     exit(0);
   }
-
 
   char simb;
   char oldSimb = '0';
@@ -112,28 +109,28 @@ int main(int argc, char *argv[]) {
     // отработка флага N
     if (flagsCat.flag_n && !flagsCat.flag_b) {
       if ((oldSimb == '\n' || numberSimbol == 1) && !flagsCat.flag_s) {
-        printf("      %6.d   ", number);
+        printf("%6.d\t", number);
         number++;
       } else if (flagsCat.flag_s && (oldSimb == '\n' || numberSimbol == 1)) {
         if (examS) {
-          printf("      %6.d   ", number);
+          printf("%6.d\t", number);
           number++;
-        } 
+        }
       }
     }
 
     // отработка флага B
     if (flagsCat.flag_b) {
       if (!flagsCat.flag_s && oldSimb == '\n' && simb != '\n') {
-        printf("      %6.d   ", number);
+        printf("%6.d\t", number);
         number++;
       }
-        if (flagsCat.flag_s && (oldSimb == '\n' || numberSimbol == 1)) {
-          if (simb != '\n' && examS) {
-            printf("      %6.d   ", number);
-            number++;
-          }
+      if (flagsCat.flag_s && (oldSimb == '\n' || numberSimbol == 1)) {
+        if (simb != '\n' && examS) {
+          printf("%6.d\t", number);
+          number++;
         }
+      }
     }
 
     // отработка флага E
@@ -144,7 +141,7 @@ int main(int argc, char *argv[]) {
         printf("$");
       }
     }
-    
+
     // отработка флага t
 
     if (flagsCat.flag_t) {
@@ -152,8 +149,6 @@ int main(int argc, char *argv[]) {
     }
 
     // отработка флага V
-
-
 
     if (flagsCat.flag_v) {
       if (simb >= 0 && simb != 9 && simb != 10 && simb < 32) {
@@ -165,57 +160,36 @@ int main(int argc, char *argv[]) {
       }
     }
 
-      // ВЫВОД В КОНСОЛЬ
-      if (flagsCat.flag_s && examS) {
-        if (examT) {
-          printf("^I");
-          examS = 0;
-          examT = 0;
-        } else if (examV) {
-          examV = 0;
-        } else {
-          printf("%c", simb);
-          examS = 0;
-        }
-      } else if (!flagsCat.flag_s) {
-        if (examT) {
-          printf("^");
-          printf("I");
-          examT = 0;
-        } else if (examV){
-          examV = 0;
-        } else {
-          printf("%c", simb);
-        }
+    // ВЫВОД В КОНСОЛЬ
+    if (flagsCat.flag_s && examS) {
+      if (examT) {
+        printf("^I");
+        examS = 0;
+        examT = 0;
+      } else if (examV) {
+        examV = 0;
+      } else {
+        printf("%c", simb);
+        examS = 0;
       }
+    } else if (!flagsCat.flag_s) {
+      if (examT) {
+        printf("^");
+        printf("I");
+        examT = 0;
+      } else if (examV) {
+        examV = 0;
+      } else {
+        printf("%c", simb);
+      }
+    }
     oldSimb = simb;
     numberSimbol++;
   }
 
-
   fclose(fp);
   return 0;
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // количество файлов
 
