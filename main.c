@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
   };
 
   if (argc != 1) {
-    while (test == 0 && (val = getopt_long(argc, argv, "ETtensbv", long_options,
-                                           NULL)) != EOF) {
+    while (test == 0 && (val = getopt_long(argc, argv, "+ETtensbv",
+                                           long_options, NULL)) != EOF) {
       switch (val) {
         case 'b':
           p_flags->flag_b++;
@@ -68,26 +68,22 @@ int main(int argc, char *argv[]) {
   int argFile = optind;
   FILE *fp;
 
-  int string_new = 0;
-  // int string_old = 0;
-
   // Проверка на сущетсвование файла
-  if ((fp = fopen(argv[argFile], "r")) == NULL) {
+if ((fp = fopen(argv[argFile], "r")) == NULL) {
     perror("Error file");
     exit(0);
   }
 
   char simb;
   char oldSimb = '0';
-  // int examination = 0;
+  int string_new = 0;
   int numberSimbol = 1;
   int examS = 0;
   int examT = 0;
   int examV = 0;
-
   int number = 1;
 
-  while ((simb = getc(fp)) != EOF) {
+    while ((simb = getc(fp)) != EOF) {
     // Смотрим, есть ли смвол переноса строки
     if (simb == '\n') string_new = string_new + 1;
 
@@ -121,7 +117,9 @@ int main(int argc, char *argv[]) {
 
     // отработка флага B
     if (flagsCat.flag_b) {
-      if (!flagsCat.flag_s && oldSimb == '\n' && simb != '\n') {
+      // printf("%c", simb);
+      if (!flagsCat.flag_s && (numberSimbol == 1 || oldSimb == '\n') &&
+          simb != '\n') {
         printf("%6.d\t", number);
         number++;
       }
@@ -190,56 +188,3 @@ int main(int argc, char *argv[]) {
   fclose(fp);
   return 0;
 }
-
-// количество файлов
-
-// while (argFile++ < argc && argc != 1) {
-//   if ((fp = fopen(argv[argFile - 1], "r")) == NULL) {
-//     perror("Error file");
-//     exit(0);
-//   }
-//   for (char symbol = '0'; (symbol = getc(fp)) != EOF;) {
-//     int strLine = 0;
-//     if (p_flags->flag_s && line_Counter_C == 0 && symbol == '\n') {
-//       line_Counter_C += 1;
-//     } else if (line_Counter_C != 0 && symbol == '\n') {
-//       line_Counter_C += 1;
-//       strLine = 1;
-//     } else if (line_Counter_C > 1 && symbol != '\n') {
-//       line_Counter_C = 0;
-//       p_flags->flag_e ? printf("$\n") : printf("\n");
-//       if (p_flags->flag_n != 0) printf("%6d\t", p_flags->flag_n++);
-//     } else {
-//       line_Counter_C = 0;
-//     }
-//     if (p_flags->flag_n != 0 || p_flags->flag_b != 0) {
-//       if (new_Line == 1 && !(new_Line = 0)) {
-//         printf("%6d\t", p_flags->flag_n++);
-//       }
-//       if (p_flags->flag_n == 1) printf("%6d\t", p_flags->flag_n++);
-//       if (p_flags->flag_b == 1) printf("%6d\t", p_flags->flag_b++);
-//       if (symbol == '\n' && p_flags->flag_n != 0 && new_Line == 0) {
-//         new_Line = 1;
-//       }
-//       if (symbol == '\n' && p_flags->flag_b != 0) line_Counter_B += 1;
-//       if (symbol != '\n' && line_Counter_B != 0 && line_Counter_C == 0) {
-//         if (!(line_Counter_B = 0)) {
-//           printf("%6d\t", p_flags->flag_b++);
-//         }
-//       }
-//     }
-//     if (symbol == '\n' && p_flags->flag_e && strLine == 0) printf("$");
-//     if (p_flags->flag_v) {
-//       if (symbol < 32 && symbol != 9 && symbol != 10) {
-//         if (symbol += 64) printf("^");
-//       }
-//       if (symbol == 127) {
-//         if ((symbol = '?')) printf("^");
-//       }
-//     }
-//     if (p_flags->flag_t && symbol == '\t') {
-//       if ((symbol = 'I')) printf("^");
-//     }
-//     if (strLine == 0) printf("%c", symbol);
-//   }
-//   argFile++;
