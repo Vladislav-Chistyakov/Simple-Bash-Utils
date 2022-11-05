@@ -81,10 +81,11 @@ int main(int argc, char *argv[]) {
 
 
   char simb;
-  // char oldSimb = '0';
+  char oldSimb = '0';
   // int examination = 0;
   int numberSimbol = 1;
   int examS = 0;
+  int number = 1;
 
   while ((simb = getc(fp)) != EOF) {
     // Смотрим, есть ли смвол переноса строки
@@ -105,6 +106,33 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    // отработка флага N
+    if (flagsCat.flag_n && !flagsCat.flag_b) {
+      if ((oldSimb == '\n' || numberSimbol == 1) && !flagsCat.flag_s) {
+        printf("      %6.d   ", number);
+        number++;
+      } else if (flagsCat.flag_s && (oldSimb == '\n' || numberSimbol == 1)) {
+        if (examS) {
+          printf("      %6.d   ", number);
+          number++;
+        } 
+      }
+    }
+
+    // отработка флага B
+    if (flagsCat.flag_b) {
+      if (!flagsCat.flag_s && oldSimb == '\n' && simb != '\n') {
+        printf("      %6.d   ", number);
+        number++;
+      }
+        if (flagsCat.flag_s && (oldSimb == '\n' || numberSimbol == 1)) {
+          if (simb != '\n' && examS) {
+            printf("      %6.d   ", number);
+            number++;
+          }
+        }
+    }
+
     // отработка флага E
     if (flagsCat.flag_e) {
       if (!flagsCat.flag_s && simb == '\n') {
@@ -114,8 +142,6 @@ int main(int argc, char *argv[]) {
       }
     }
 
-
-
     // ВЫВОД В КОНСОЛЬ
     if (flagsCat.flag_s && examS) {
       printf("%c", simb);
@@ -123,7 +149,7 @@ int main(int argc, char *argv[]) {
     } else if (!flagsCat.flag_s) {
       printf("%c", simb);
     }
-
+    oldSimb = simb;
     numberSimbol++;
   }
 
