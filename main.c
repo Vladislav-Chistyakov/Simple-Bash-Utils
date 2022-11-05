@@ -86,6 +86,8 @@ int main(int argc, char *argv[]) {
   int numberSimbol = 1;
   int examS = 0;
   int examT = 0;
+  int examV = 0;
+
   int number = 1;
 
   while ((simb = getc(fp)) != EOF) {
@@ -149,12 +151,28 @@ int main(int argc, char *argv[]) {
       if (simb == 9) examT = 1;
     }
 
+    // отработка флага V
+
+
+
+    if (flagsCat.flag_v) {
+      if (simb >= 0 && simb != 9 && simb != 10 && simb < 32) {
+        printf("^%c", simb + 64);
+        examV = 1;
+      } else if (simb == 127) {
+        printf("^?");
+        examV = 1;
+      }
+    }
+
       // ВЫВОД В КОНСОЛЬ
       if (flagsCat.flag_s && examS) {
         if (examT) {
           printf("^I");
           examS = 0;
           examT = 0;
+        } else if (examV) {
+          examV = 0;
         } else {
           printf("%c", simb);
           examS = 0;
@@ -164,6 +182,8 @@ int main(int argc, char *argv[]) {
           printf("^");
           printf("I");
           examT = 0;
+        } else if (examV){
+          examV = 0;
         } else {
           printf("%c", simb);
         }
