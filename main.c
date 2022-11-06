@@ -2,39 +2,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void funcFlagS(int *testingFlags, int *stringNew, char simb, int numberSimbol);
-void funcFlagN(int numberSimbol, int flagS, int *number, int examS,
-               char oldSimb);
-void funcFlagB(int numberSimbol, int flagS, int *number, int examS,
-               char oldSimb, char simb);
+#include "functions_cat.c"
+#include "functions_cat.h"
+#include "output.c"
+#include "output.h"
 
-void funcFlagE(int flagS, char simb, int examS);
-
-void funcFlagT(char simb, int *examT);
-
-void funcFlagV(char simb, int *examV);
-
-void outputFuncCat(int flagS, int *examS, int *examV, int *examT, char simb);
+struct flags {
+  int flag_b;
+  int flag_s;
+  int flag_n;
+  int flag_e;
+  int flag_t;
+  int flag_v;
+};
+struct flags flagsCat = {0};
+struct flags *p_flags = &flagsCat;
+static struct option long_options[] = {
+    {"number-nonblank", 0, 0, 'b'},
+    {"number", 0, 0, 'n'},
+    {"squeeze-blank)", 0, 0, 's'},
+};
 
 int main(int argc, char *argv[]) {
   int val;
   int test = 0;
-
-  struct flags {
-    int flag_b;
-    int flag_s;
-    int flag_n;
-    int flag_e;
-    int flag_t;
-    int flag_v;
-  };
-  struct flags flagsCat = {0};
-  struct flags *p_flags = &flagsCat;
-  static struct option long_options[] = {
-      {"number-nonblank", 0, 0, 'b'},
-      {"number", 0, 0, 'n'},
-      {"squeeze-blank)", 0, 0, 's'},
-  };
 
   if (argc != 1) {
     while (test == 0 && (val = getopt_long(argc, argv, "+ETtensbv",
@@ -128,91 +119,4 @@ int main(int argc, char *argv[]) {
     optind++;
   }
   return 0;
-}
-
-void funcFlagS(int *testingFlags, int *stringNew, char simb, int numberSimbol) {
-  if (*stringNew == 1 && numberSimbol == 1) {
-    *stringNew = 2;
-    *testingFlags = 1;
-  }
-  if (*stringNew < 3) {
-    *testingFlags = 1;
-    if (simb != '\n') *stringNew = 0;
-  } else if (simb != '\n') {
-    *stringNew = 0;
-    *testingFlags = 1;
-  }
-}
-
-void funcFlagN(int numberSimbol, int flagS, int *number, int examS,
-               char oldSimb) {
-  if ((oldSimb == '\n' || numberSimbol == 1) && !flagS) {
-    printf("%6.d\t", *number);
-    *number = *number + 1;
-  } else if (flagS && (oldSimb == '\n' || numberSimbol == 1)) {
-    if (examS) {
-      printf("%6.d\t", *number);
-      *number = *number + 1;
-    }
-  }
-}
-
-void funcFlagB(int numberSimbol, int flagS, int *number, int examS,
-               char oldSimb, char simb) {
-  if (!flagS && (numberSimbol == 1 || oldSimb == '\n') && simb != '\n') {
-    printf("%6.d\t", *number);
-    *number = *number + 1;
-  }
-  if (flagS && (oldSimb == '\n' || numberSimbol == 1)) {
-    if (simb != '\n' && examS) {
-      printf("%6.d\t", *number);
-      *number = *number + 1;
-    }
-  }
-}
-
-void funcFlagE(int flagS, char simb, int examS) {
-  if (!flagS && simb == '\n') {
-    printf("$");
-  } else if (examS && simb == '\n') {
-    printf("$");
-  }
-}
-
-void funcFlagT(char simb, int *examT) {
-  if (simb == 9) *examT = 1;
-}
-
-void funcFlagV(char simb, int *examV) {
-  if (simb >= 0 && simb != 9 && simb != 10 && simb < 32) {
-    printf("^%c", simb + 64);
-    *examV = 1;
-  } else if (simb == 127) {
-    printf("^?");
-    *examV = 1;
-  }
-}
-
-void outputFuncCat(int flagS, int *examS, int *examV, int *examT, char simb) {
-  if (flagS && *examS) {
-    if (*examT) {
-      printf("^I");
-      *examS = 0;
-      *examT = 0;
-    } else if (*examV) {
-      *examV = 0;
-    } else {
-      printf("%c", simb);
-      *examS = 0;
-    }
-  } else if (!flagS) {
-    if (*examT) {
-      printf("^I");
-      *examT = 0;
-    } else if (*examV) {
-      *examV = 0;
-    } else {
-      printf("%c", simb);
-    }
-  }
 }
