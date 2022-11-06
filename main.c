@@ -7,6 +7,7 @@
 #include "output.c"
 #include "output.h"
 
+// структура для записи найденных флагов
 struct flags {
   int flag_b;
   int flag_s;
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]) {
   int test = 0;
 
   if (argc != 1) {
+    // нажождение в аргументах файлов и флагов
     while (test == 0 && (val = getopt_long(argc, argv, "+ETtensbv",
                                            long_options, NULL)) != EOF) {
       switch (val) {
@@ -61,12 +63,12 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-  // на каком арументе в массиве записан файл
+  // цикл для возможности реализации CAT для нескольких файлов
   while (optind < argc) {
     int argFile = optind;
     FILE *fp;
 
-    // Проверка на сущетсвование файла
+    // Открытие и проверка файла
     if ((fp = fopen(argv[argFile], "r")) == NULL) {
       perror("Error file");
       exit(0);
@@ -81,34 +83,24 @@ int main(int argc, char *argv[]) {
     int examV = 0;
     int number = 1;
 
+    //Прохождение по каждому символу файла
     while ((simb = getc(fp)) != EOF) {
       // Смотрим, есть ли смвол переноса строки
       if (simb == '\n') string_new = string_new + 1;
-
       // отработка флага S
-      if (flagsCat.flag_s) {
-        funcFlagS(&examS, &string_new, simb, numberSimbol);
-      }
+      if (flagsCat.flag_s) funcFlagS(&examS, &string_new, simb, numberSimbol);
       // отработка флага N
-      if (flagsCat.flag_n && !flagsCat.flag_b) {
+      if (flagsCat.flag_n && !flagsCat.flag_b)
         funcFlagN(numberSimbol, flagsCat.flag_s, &number, examS, oldSimb);
-      }
       // отработка флага B
-      if (flagsCat.flag_b) {
+      if (flagsCat.flag_b)
         funcFlagB(numberSimbol, flagsCat.flag_s, &number, examS, oldSimb, simb);
-      }
       // отработка флага E
-      if (flagsCat.flag_e) {
-        funcFlagE(flagsCat.flag_s, simb, examS);
-      }
+      if (flagsCat.flag_e) funcFlagE(flagsCat.flag_s, simb, examS);
       // отработка флага t
-      if (flagsCat.flag_t) {
-        funcFlagT(simb, &examT);
-      }
+      if (flagsCat.flag_t) funcFlagT(simb, &examT);
       // отработка флага V
-      if (flagsCat.flag_v) {
-        funcFlagV(simb, &examV);
-      }
+      if (flagsCat.flag_v) funcFlagV(simb, &examV);
       // ВЫВОД В КОНСОЛЬ
       outputFuncCat(flagsCat.flag_s, &examS, &examV, &examT, simb);
       // взаимодействие с символами и строками
