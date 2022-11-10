@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bashcd 
 
 SUCCESS=0
 FAIL=0
