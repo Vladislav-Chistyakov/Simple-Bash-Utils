@@ -1,0 +1,45 @@
+
+#include <getopt.h>
+#include <limits.h>
+#include <regex.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BUFFER_SIZE 512
+
+// структура для записи найденных флагов
+// FLAGI
+// - o Печатает только совпадающие(непустые)
+// части совпавшей строки.
+// void stringBuffer(char *string);
+void textArg(char *optarg, char *pattern);
+void grepNoFlags(int optind, int argc, char *pattern, char *argv[]);
+void funcFlagE(char *argv[], int optind, int testFiles, char *pattern);
+void flagsC(int testFiles, char *argv[], int optind, int *numberStrC);
+void flagcL(int optind, char *argv[]);
+void flagN(int numberStr, int n);
+void flagTraining(int test, char *argv[], char *buffer, int numberStr,
+                  int numberArg, int *numberStrC, char *pattern, int *numberO);
+void flagPracticeTemplate(char *argv[], int optind, int numberStr,
+                          int *numberStrC, int testFiles, char *buffer,
+                          char *pattern, int *numberO);
+void funcFlagF(char *fileName, char *pattern);
+void funcFlagO(char *pattern, int *numberO, char *buffer);
+
+struct flags {
+  int flag_e;
+  int flag_i;
+  int flag_v;
+  int flag_c;
+  int flag_l;
+  int flag_n;
+  int flag_h;
+  int flag_s;
+  int flag_f;
+  int flag_o;
+};
+struct flags flagsGrep = {0};
+struct flags *p_flags = &flagsGrep;
+
+void switchCase(int val, char *pattern);
