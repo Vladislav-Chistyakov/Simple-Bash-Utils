@@ -17,8 +17,7 @@
 void textArg(char *optarg, char *pattern);
 void grepNoFlags(int optind, int argc, char *pattern, char *argv[]);
 void funcFlagE(char *argv[], int optind, int testFiles, char *pattern);
-void flagsC(int testFiles, char *argv[], int optind, int *numberStrC,
-            int flag_l);
+void flagsC(int testFiles, char *argv[], int optind, int *numberStrC);
 void flagcL(int optind, char *argv[]);
 void flagN(int numberStr, int n);
 void flagTraining(int test, char *argv[], char *buffer, int numberStr,
@@ -163,23 +162,17 @@ void switchCase(int val, char *pattern) {
 
 //  Действие << без >> флага -E
 void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
-  //  задаём изначальное значение для вывода количества совпадений
   int numberStrC = 0;
-  // созда>м regex_t
   regex_t re;
   char buffer[BUFFER_SIZE];
   int test = 0;
   if (optind + 1 != argc - 1) test = 1;
-  // проходимся по списку файлов
   for (int numberArg = optind + 1; numberArg < argc; numberArg++) {
-    // отработка с флагом  << i >>
     if (flagsGrep.flag_i > 0) {
       regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB | REG_ICASE);
-      // отработка << без >> флага << i >>
     } else {
       regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB);
     }
-    // открываем файл
     FILE *fp;
     int numberStr = 1;
 
@@ -188,13 +181,10 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
         perror("No FILE");
       }
     } else {
-      // проходимся по строчно в поиска совпадения
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
-        // если флага << V >>  нет, то обрабатываем по стандарту
         if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_v == 0 &&
             flagsGrep.flag_l == 0) {
           flagTraining(test, argv, buffer, numberStr, numberArg, &numberStrC);
-          // Если флаг << V >>  присутствует, обрабатываем по нему
         } else if (regexec(&re, buffer, 0, NULL, 0) != 0 &&
                    flagsGrep.flag_v > 0 && flagsGrep.flag_l == 0) {
           flagTraining(test, argv, buffer, numberStr, numberArg, &numberStrC);
@@ -202,11 +192,9 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
         numberStr++;
       }
     }
-    // вывод данных, если есть флаг << C >>
     if (flagsGrep.flag_c > 0) {
-      flagsC(test, argv, optind, &numberStrC, flagsGrep.flag_l);
+      flagsC(test, argv, optind, &numberStrC);
     }
-    // вывод флага << L >>
     if (flagsGrep.flag_l) {
       flagcL(numberArg, argv);
     }
@@ -217,37 +205,27 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
 
 //  Действие << с >> флагом -E
 void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
-  //  задаём изначальное значение для вывода количества совпадений
   int numberStrC = 0;
-  // задаём regex_t
   regex_t re;
   char buffer[BUFFER_SIZE];
-  // проверка на флаг << -i >>
   if (flagsGrep.flag_i) {
     regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB | REG_ICASE);
   } else {
     regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB);
   }
-  // начинаем проходится по файлам
   while (argv[optind] != NULL) {
     int numberStr = 1;
-
     FILE *fp;
     if ((fp = fopen(argv[optind], "r")) == NULL) {
       if (flagsGrep.flag_s == 0) {
         perror("No FILE");
       }
     } else {
-      // проходимся по каждой строчке
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
-        //  если флага << V >> не обнаруживаем, то выполняем стандартные функции
-        // для вывода данных
         if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_v == 0 &&
             flagsGrep.flag_l == 0) {
-          // отображаем файлы, если их заданного больше одного
           flagPracticeTemplate(argv, optind, numberStr, &numberStrC, testFiles,
                                buffer);
-          // если обнаруживается флаг << V >> то выводим несоответсвия
         } else if (regexec(&re, buffer, 0, NULL, 0) != 0 &&
                    flagsGrep.flag_v > 0 && flagsGrep.flag_l == 0) {
           flagPracticeTemplate(argv, optind, numberStr, &numberStrC, testFiles,
@@ -255,15 +233,12 @@ void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
         }
         numberStr++;
       }
-      // вывод данных, если есть флаг << C >>
       if (flagsGrep.flag_c > 0) {
-        flagsC(testFiles, argv, optind, &numberStrC, flagsGrep.flag_l);
+        flagsC(testFiles, argv, optind, &numberStrC);
       }
-      // вывод флага << L >>
       if (flagsGrep.flag_l) {
         flagcL(optind, argv);
       }
-
       fclose(fp);
     }
     optind++;
@@ -282,14 +257,17 @@ void textArg(char *optarg, char *pattern) {
 }
 
 // отработка флага << C >>
-void flagsC(int testFiles, char *argv[], int optind, int *numberStrC,
-            int flag_l) {
-  if (flag_l == 0) {
-    if (testFiles > 1) printf("%s:", argv[optind]);
+void flagsC(int testFiles, char *argv[], int optind, int *numberStrC) {
+  if (flagsGrep.flag_l == 0) {
+    if (flagsGrep.flag_h == 0) {
+      if (testFiles > 1) printf("%s:", argv[optind]);
+    }
     printf("%d\n", *numberStrC);
     *numberStrC = 0;
-  } else if (flag_l) {
-    if (testFiles > 1) printf("%s:", argv[optind]);
+  } else if (flagsGrep.flag_l) {
+    if (flagsGrep.flag_h == 0) {
+      if (testFiles > 1) printf("%s:", argv[optind]);
+    }
     printf("%d\n", 1);
   }
 }
@@ -308,6 +286,8 @@ void flagTraining(int test, char *argv[], char *buffer, int numberStr,
     flagN(numberStr, flagsGrep.flag_n);
     // вывод строки с результатом нахождения
     fputs(buffer, stdout);
+    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
+      printf("\n");
 
   } else {
     *numberStrC = *numberStrC + 1;
@@ -328,5 +308,7 @@ void flagPracticeTemplate(char *argv[], int optind, int numberStr,
   } else {
     // Иначе вывод совпадения в консоль
     fputs(buffer, stdout);
+    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
+      printf("\n");
   }
 }
