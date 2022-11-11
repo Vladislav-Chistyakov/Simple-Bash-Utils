@@ -9,8 +9,6 @@
 
 // структура для записи найденных флагов
 // FLAGI
-// - s Подавляет сообщения об ошибках о несуществующих или нечитаемых файлах.
-// - f file Получает регулярные выражения из файла.
 // - o Печатает только совпадающие(непустые)
 // части совпавшей строки.
 // void stringBuffer(char *string);
@@ -23,8 +21,10 @@ void flagN(int numberStr, int n);
 void flagTraining(int test, char *argv[], char *buffer, int numberStr,
                   int numberArg, int *numberStrC);
 void flagPracticeTemplate(char *argv[], int optind, int numberStr,
-                          int *numberStrC, int testFiles, char *buffer);
+                          int *numberStrC, int testFiles, char *buffer,
+                          char *pattern, int *numberO);
 void funcFlagF(char *fileName, char *pattern);
+void funcFlagO(char *pattern, int *numberO, char *buffer);
 
 struct flags {
   int flag_e;
@@ -41,7 +41,6 @@ struct flags {
 struct flags flagsGrep = {0};
 struct flags *p_flags = &flagsGrep;
 
-
 void switchCase(int val, char *pattern);
 
 int main(int argc, char *argv[]) {
@@ -53,8 +52,8 @@ int main(int argc, char *argv[]) {
 
   if (argc != 1) {
     // нажождение в аргументах файлов и флагов
-    while (test == 0 && (val = getopt_long(argc, argv, "e:ivclnhsf:o",
-                                           0, NULL)) != EOF) {
+    while (test == 0 &&
+           (val = getopt_long(argc, argv, "e:ivclnhsf:o", 0, NULL)) != EOF) {
       switchCase(val, pattern);
       // подсчитываем количество файлов
       for (int i = 0; i < argc; i++) {
@@ -174,6 +173,7 @@ void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
   int numberStrC = 0;
   regex_t re;
   char buffer[BUFFER_SIZE];
+  int numberO = 0;
   if (flagsGrep.flag_i) {
     regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB | REG_ICASE);
   } else {
@@ -191,11 +191,11 @@ void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
         if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_v == 0 &&
             flagsGrep.flag_l == 0) {
           flagPracticeTemplate(argv, optind, numberStr, &numberStrC, testFiles,
-                               buffer);
+                               buffer, pattern, &numberO);
         } else if (regexec(&re, buffer, 0, NULL, 0) != 0 &&
                    flagsGrep.flag_v > 0 && flagsGrep.flag_l == 0) {
           flagPracticeTemplate(argv, optind, numberStr, &numberStrC, testFiles,
-                               buffer);
+                               buffer, pattern, &numberO);
         }
         numberStr++;
       }
@@ -224,18 +224,9 @@ void funcFlagF(char *fileName, char *pattern) {
     if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] == '\n') {
       buffer[strlen(buffer) - 1] = '\0';
     }
-      textArg(buffer, pattern);
+    textArg(buffer, pattern);
   }
-}
-
-// соединяем паттерны
-void textArg(char *optarg, char *pattern) {
-  if (pattern == NULL) {
-    strcat(pattern, optarg);
-  } else {
-    strcat(pattern, optarg);
-    strcat(pattern, "|");
-  }
+  fclose(fp);
 }
 
 // отработка флага << C >>
@@ -260,6 +251,16 @@ void flagN(int numberStr, int n) {
   if (n) printf("%d:", numberStr);
 }
 
+// соединяем паттерны
+void textArg(char *optarg, char *pattern) {
+  if (pattern == NULL) {
+    strcat(pattern, optarg);
+  } else {
+    strcat(pattern, optarg);
+    strcat(pattern, "|");
+  }
+}
+
 // отработка флагов  <<  без >> шаблона
 void flagTraining(int test, char *argv[], char *buffer, int numberStr,
                   int numberArg, int *numberStrC) {
@@ -277,8 +278,9 @@ void flagTraining(int test, char *argv[], char *buffer, int numberStr,
 
 // отработка флагов  <<  с шаблоном  >>
 void flagPracticeTemplate(char *argv[], int optind, int numberStr,
-                          int *numberStrC, int testFiles, char *buffer) {
-  // отображаем файлы, если их заданного больше одного
+                          int *numberStrC, int testFiles, char *buffer, char *pattern, int *numberO) {
+  funcFlagO(pattern, numberO, buffer);
+    // отображаем файлы, если их заданного больше одного
   if (flagsGrep.flag_c == 0) {
     if (testFiles > 1 && flagsGrep.flag_h == 0) printf("%s:", argv[optind]);
     flagN(numberStr, flagsGrep.flag_n);
@@ -288,8 +290,43 @@ void flagPracticeTemplate(char *argv[], int optind, int numberStr,
     *numberStrC = *numberStrC + 1;
   } else {
     // Иначе вывод совпадения в консоль
+
     fputs(buffer, stdout);
     if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
       printf("\n");
   }
 }
+
+void funcFlagO(char *pattern, int *numberO, char *buffer) {
+  int i = 0;
+  int j = 0;
+  char stringArg[100][BUFFER_SIZE];
+  for (*numberO = 0; pattern[*numberO] != '\0'; *numberO = *numberO + 1) {
+    if (pattern[*numberO] == '|') {
+      i++;
+      j = 0;
+    } else {
+      stringArg[i][j] = pattern[*numberO];
+      j++;
+    }
+  }
+  *numberO = i;
+  for (int i = 0; i <= *numberO; i++) {
+    int j = 0;
+    int k = 0;
+    int test = 0;
+
+    while (buffer[j] != '\0') {
+      if (buffer[j] == stringArg[i][k]) {
+        printf("%c", buffer[j]);
+        k++;
+      }
+      if (stringArg[i][k] == '\0' && buffer[j] == stringArg[i][k - 1]) {
+        printf("\n");
+        k = 0;
+      }
+      j++;
+    }
+  }
+}
+
