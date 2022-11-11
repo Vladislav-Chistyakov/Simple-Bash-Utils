@@ -184,8 +184,9 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
     int numberStr = 1;
 
     if ((fp = fopen(argv[numberArg], "r")) == NULL) {
-      perror("No FILE");
-      exit(0);
+      if (flagsGrep.flag_s == 0) {
+        perror("No FILE");
+      }
     } else {
       // проходимся по строчно в поиска совпадения
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
@@ -232,9 +233,11 @@ void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
     int numberStr = 1;
 
     FILE *fp;
-    fp = fopen(argv[optind], "r");
-    // если файл открывается, то заходим и ищем совпадения
-    if (fp != NULL) {
+    if ((fp = fopen(argv[optind], "r")) == NULL) {
+      if (flagsGrep.flag_s == 0) {
+        perror("No FILE");
+      }
+    } else {
       // проходимся по каждой строчке
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         //  если флага << V >> не обнаруживаем, то выполняем стандартные функции
@@ -242,7 +245,8 @@ void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
         if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_v == 0 &&
             flagsGrep.flag_l == 0) {
           // отображаем файлы, если их заданного больше одного
-          flagPracticeTemplate(argv, optind, numberStr, &numberStrC, testFiles, buffer);
+          flagPracticeTemplate(argv, optind, numberStr, &numberStrC, testFiles,
+                               buffer);
           // если обнаруживается флаг << V >> то выводим несоответсвия
         } else if (regexec(&re, buffer, 0, NULL, 0) != 0 &&
                    flagsGrep.flag_v > 0 && flagsGrep.flag_l == 0) {
@@ -261,8 +265,6 @@ void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
       }
 
       fclose(fp);
-    } else {
-      printf("No such file\n");
     }
     optind++;
   }
@@ -313,8 +315,8 @@ void flagTraining(int test, char *argv[], char *buffer, int numberStr,
 }
 
 // отработка флагов  <<  с шаблоном  >>
-void flagPracticeTemplate(char *argv[], int optind, int numberStr, int *numberStrC, int testFiles,
-                          char *buffer) {
+void flagPracticeTemplate(char *argv[], int optind, int numberStr,
+                          int *numberStrC, int testFiles, char *buffer) {
   // отображаем файлы, если их заданного больше одного
   if (flagsGrep.flag_c == 0) {
     if (testFiles > 1 && flagsGrep.flag_h == 0) printf("%s:", argv[optind]);
