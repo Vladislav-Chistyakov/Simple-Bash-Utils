@@ -19,7 +19,7 @@ void flagsC(int testFiles, char *argv[], int optind, int *numberStrC);
 void flagcL(int optind, char *argv[]);
 void flagN(int numberStr, int n);
 void flagTraining(int test, char *argv[], char *buffer, int numberStr,
-                  int numberArg, int *numberStrC);
+                  int numberArg, int *numberStrC, char *pattern, int *numberO);
 void flagPracticeTemplate(char *argv[], int optind, int numberStr,
                           int *numberStrC, int testFiles, char *buffer,
                           char *pattern, int *numberO);
@@ -131,6 +131,7 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
   regex_t re;
   char buffer[BUFFER_SIZE];
   int test = 0;
+  int numberO = 0;
   if (optind + 1 != argc - 1) test = 1;
   for (int numberArg = optind + 1; numberArg < argc; numberArg++) {
     if (flagsGrep.flag_i > 0) {
@@ -149,10 +150,12 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_v == 0 &&
             flagsGrep.flag_l == 0) {
-          flagTraining(test, argv, buffer, numberStr, numberArg, &numberStrC);
+          flagTraining(test, argv, buffer, numberStr, numberArg, &numberStrC,
+                       pattern, &numberO);
         } else if (regexec(&re, buffer, 0, NULL, 0) != 0 &&
                    flagsGrep.flag_v > 0 && flagsGrep.flag_l == 0) {
-          flagTraining(test, argv, buffer, numberStr, numberArg, &numberStrC);
+          flagTraining(test, argv, buffer, numberStr, numberArg, &numberStrC,
+                       pattern, &numberO);
         }
         numberStr++;
       }
@@ -263,14 +266,19 @@ void textArg(char *optarg, char *pattern) {
 
 // отработка флагов  <<  без >> шаблона
 void flagTraining(int test, char *argv[], char *buffer, int numberStr,
-                  int numberArg, int *numberStrC) {
+                  int numberArg, int *numberStrC, char *pattern, int *numberO) {
+  if (flagsGrep.flag_o) funcFlagO(pattern, numberO, buffer);
   if (flagsGrep.flag_c == 0) {
     if (test == 1 && flagsGrep.flag_h == 0) printf("%s:", argv[numberArg]);
     flagN(numberStr, flagsGrep.flag_n);
     // вывод строки с результатом нахождения
-    fputs(buffer, stdout);
-    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
-      printf("\n");
+    if (flagsGrep.flag_o) {
+      funcFlagO(pattern, numberO, buffer);
+    } else {
+      fputs(buffer, stdout);
+      if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
+        printf("\n");
+    }
   } else {
     *numberStrC = *numberStrC + 1;
   }
@@ -278,9 +286,9 @@ void flagTraining(int test, char *argv[], char *buffer, int numberStr,
 
 // отработка флагов  <<  с шаблоном  >>
 void flagPracticeTemplate(char *argv[], int optind, int numberStr,
-                          int *numberStrC, int testFiles, char *buffer, char *pattern, int *numberO) {
-  funcFlagO(pattern, numberO, buffer);
-    // отображаем файлы, если их заданного больше одного
+                          int *numberStrC, int testFiles, char *buffer,
+                          char *pattern, int *numberO) {
+  // отображаем файлы, если их заданного больше одного
   if (flagsGrep.flag_c == 0) {
     if (testFiles > 1 && flagsGrep.flag_h == 0) printf("%s:", argv[optind]);
     flagN(numberStr, flagsGrep.flag_n);
@@ -290,10 +298,13 @@ void flagPracticeTemplate(char *argv[], int optind, int numberStr,
     *numberStrC = *numberStrC + 1;
   } else {
     // Иначе вывод совпадения в консоль
-
-    fputs(buffer, stdout);
-    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
-      printf("\n");
+    if (flagsGrep.flag_o) {
+      funcFlagO(pattern, numberO, buffer);
+    } else {
+      fputs(buffer, stdout);
+      if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
+        printf("\n");
+    }
   }
 }
 
@@ -314,14 +325,23 @@ void funcFlagO(char *pattern, int *numberO, char *buffer) {
   for (int i = 0; i <= *numberO; i++) {
     int j = 0;
     int k = 0;
-    int test = 0;
-
     while (buffer[j] != '\0') {
-      if (buffer[j] == stringArg[i][k]) {
+      if (flagsGrep.flag_i &&
+          (buffer[j] == stringArg[i][k] || buffer[j] == stringArg[i][k] - 32 ||
+           buffer[j] == stringArg[i][k] + 32)) {
+        printf("%c", buffer[j]);
+        k++;
+      } else if (buffer[j] == stringArg[i][k]) {
         printf("%c", buffer[j]);
         k++;
       }
-      if (stringArg[i][k] == '\0' && buffer[j] == stringArg[i][k - 1]) {
+      if (flagsGrep.flag_i && stringArg[i][k] == '\0' &&
+          (buffer[j] == stringArg[i][k - 1] ||
+           buffer[j] == stringArg[i][k - 1] - 32 ||
+           buffer[j] == stringArg[i][k - 1] + 32)) {
+        printf("\n");
+        k = 0;
+      } else if (stringArg[i][k] == '\0' && buffer[j] == stringArg[i][k - 1]) {
         printf("\n");
         k = 0;
       }
@@ -329,4 +349,3 @@ void funcFlagO(char *pattern, int *numberO, char *buffer) {
     }
   }
 }
-
