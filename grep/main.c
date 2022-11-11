@@ -24,6 +24,7 @@ void flagTraining(int test, char *argv[], char *buffer, int numberStr,
                   int numberArg, int *numberStrC);
 void flagPracticeTemplate(char *argv[], int optind, int numberStr,
                           int *numberStrC, int testFiles, char *buffer);
+void funcFlagF(char *fileName, char *pattern);
 
 struct flags {
   int flag_e;
@@ -36,15 +37,10 @@ struct flags {
   int flag_s;
   int flag_f;
   int flag_o;
-  int flagsNumber;
 };
 struct flags flagsGrep = {0};
 struct flags *p_flags = &flagsGrep;
-static struct option long_options[] = {
-    {"number-nonblank", 0, 0, 'b'},
-    {"number", 0, 0, 'n'},
-    {"squeeze-blank)", 0, 0, 's'},
-};
+
 
 void switchCase(int val, char *pattern);
 
@@ -57,8 +53,8 @@ int main(int argc, char *argv[]) {
 
   if (argc != 1) {
     // нажождение в аргументах файлов и флагов
-    while (test == 0 && (val = getopt_long(argc, argv, "e:ivclnhsfo",
-                                           long_options, NULL)) != EOF) {
+    while (test == 0 && (val = getopt_long(argc, argv, "e:ivclnhsf:o",
+                                           0, NULL)) != EOF) {
       switchCase(val, pattern);
       // подсчитываем количество файлов
       for (int i = 0; i < argc; i++) {
@@ -94,65 +90,35 @@ void switchCase(int val, char *pattern) {
   switch (val) {
     case 'e':
       p_flags->flag_e++;
-      p_flags->flagsNumber++;
-      // printf("\te\t%d\n", p_flags->flag_e);
       textArg(optarg, pattern);
-      // fileArg(argv[optind]);-
-
       break;
     case 'i':
       p_flags->flag_i++;
-      p_flags->flagsNumber++;
-      // printf("\ti\t%d\n", p_flags->flag_i);
-
       break;
     case 'v':
       p_flags->flag_v++;
-      p_flags->flagsNumber++;
-      // printf("\tv\t%d\n", p_flags->flag_v);
-
       break;
     case 'c':
       p_flags->flag_c++;
-      p_flags->flagsNumber++;
-      // printf("\tc\t%d\n", p_flags->flag_c);
-
       break;
     case 'l':
       p_flags->flag_l++;
-      p_flags->flagsNumber++;
-      // printf("\tl\t%d\n", p_flags->flag_l);
-
       break;
     case 'n':
       p_flags->flag_n++;
-      p_flags->flagsNumber++;
-      // printf("\tn\t%d\n", p_flags->flag_n);
-
       break;
     case 'h':
       p_flags->flag_h++;
-      p_flags->flagsNumber++;
-      // printf("\th\t%d\n", p_flags->flag_h);
-
       break;
     case 's':
       p_flags->flag_s++;
-      p_flags->flagsNumber++;
-      // printf("\ts\t%d\n", p_flags->flag_s);
-
       break;
     case 'f':
       p_flags->flag_f++;
-      p_flags->flagsNumber++;
-      // printf("\t\ft%d\n", p_flags->flag_f);
-
+      funcFlagF(optarg, pattern);
       break;
     case 'o':
       p_flags->flag_o++;
-      p_flags->flagsNumber++;
-      // printf("\to\t%d\n", p_flags->flag_o);
-
       break;
     default:
       exit(0);
@@ -246,6 +212,22 @@ void funcFlagE(char *argv[], int optind, int testFiles, char *pattern) {
   regfree(&re);
 }
 
+void funcFlagF(char *fileName, char *pattern) {
+  FILE *fp;
+  char buffer[BUFFER_SIZE];
+  if ((fp = fopen(fileName, "r")) == NULL) {
+    if (flagsGrep.flag_s == 0) {
+      perror("No FILE");
+    }
+  }
+  while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
+    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] == '\n') {
+      buffer[strlen(buffer) - 1] = '\0';
+    }
+      textArg(buffer, pattern);
+  }
+}
+
 // соединяем паттерны
 void textArg(char *optarg, char *pattern) {
   if (pattern == NULL) {
@@ -288,7 +270,6 @@ void flagTraining(int test, char *argv[], char *buffer, int numberStr,
     fputs(buffer, stdout);
     if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n')
       printf("\n");
-
   } else {
     *numberStrC = *numberStrC + 1;
   }
