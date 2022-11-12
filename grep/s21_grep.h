@@ -15,17 +15,18 @@
 // void stringBuffer(char *string);
 void textArg(char *optarg, char *pattern);
 void grepNoFlags(int optind, int argc, char *pattern, char *argv[]);
-void funcFlagE(char *argv[], int optind, int testFiles, char *pattern);
-void flagsC(int testFiles, char *argv[], int optind, int *numberStrC);
-void flagcL(int optind, char *argv[]);
+void flagsC(int testFiles, char *nameFile, int numberStrC);
+void flagcL(char *nameFile);
 void flagN(int numberStr, int n);
-void flagTraining(int test, char *argv[], char *buffer, int numberStr,
-                  int numberArg, int *numberStrC, char *pattern, int *numberO);
-void flagPracticeTemplate(char *argv[], int optind, int numberStr,
-                          int *numberStrC, int testFiles, char *buffer,
-                          char *pattern, int *numberO);
 void funcFlagF(char *fileName, char *pattern);
-void funcFlagO(char *pattern, int *numberO, char *buffer);
+void flagTraining(int test, char *argv[], char *buffer, int numberStr,
+                  int numberArg);
+
+// void funcFlagO(char *pattern, int *numberO, char *buffer);
+// void funcFlagE(char *argv[], int optind, int testFiles, char *pattern);
+// void flagPracticeTemplate(char *argv[], int optind, int numberStr,
+//                           int *numberStrC, int testFiles, char *buffer,
+//                           char *pattern, int *numberO);
 
 struct flags {
   int flag_e;
