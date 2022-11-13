@@ -22,12 +22,29 @@ int main(int argc, char *argv[]) {
         }
       }
     }
+
     // присвоение паттерна с флагом -е и без
     if (flagsGrep.flag_e == 0) {
-      pattern = argv[optind];
+      if (flagsGrep.flag_f == 0) {
+        pattern = argv[optind];
+      }
     } else {
       pattern[strlen(pattern) - 1] = '\0';
     }
+
+    if (flagsGrep.flag_f && flagsGrep.flag_e == 0) {
+      FILE *fp;
+      for (int i = 1; argv[i] != NULL; i++) {
+        if (argv[i][0] != '-') {
+          if ((fp = fopen(argv[i], "r")) == NULL) {
+            perror("FLAG F!");
+          }
+          fclose(fp);
+        }
+      }
+    }
+    // printf("pattern %s\n", pattern);
+
     // отработка grep без шалона <<  grep text file  >>
     if (flagsGrep.flag_e == 0) {
       grepNoFlags(optind, argc, pattern, argv);
@@ -93,6 +110,10 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
     if (argv[numberArg][0] != '-' && flagsGrep.flag_e == 0) numberFiles++;
   }
 
+  // printf("optind  %d", optind);
+  // ЧТОБЫ ВКЛЮЧИТЬ ФЛАГ Ф НУЖЕН ОПТИНД БЕЗ ПРИБАВЛЕНИЯ
+  // ПОКА НЕ ЗНАЮ КАК ЭТО СДЕЛАТЬ
+
   for (int numberArg = optind + 1; numberArg < argc; numberArg++) {
     // Выбеоаем тип флагов под флаг I и без него
     flagsGrep.flag_i > 0
@@ -111,19 +132,22 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
     } else {
       // Проходимся по каждой строке в файле
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
-        int regTru = regexec(&re, buffer, 0, NULL, 0);
-
+        // int regTru = regexec(&re, buffer, 0, NULL, 0);
         // если находим потверждение то передаём данные в функции
-        if (regTru == 0 && flagsGrep.flag_v == 0 && flagsGrep.flag_l == 0) {
+
+        if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_v == 0 &&
+            flagsGrep.flag_l == 0) {
+
           flagTraining(test, argv, buffer, numberStr, numberArg);
-        } else if (regTru != 0 && flagsGrep.flag_v > 0 &&
-                   flagsGrep.flag_l == 0) {
+        } else if (regexec(&re, buffer, 0, NULL, 0) != 0 &&
+                   flagsGrep.flag_v > 0 && flagsGrep.flag_l == 0) {
           flagTraining(test, argv, buffer, numberStr, numberArg);
         }
-        if (regTru == 0 && flagsGrep.flag_c) {
+        if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_c) {
           flagsGrep.flag_l ? flagTestC = 1 : flagTestC++;
         }
-        if (regTru == 0 && flagsGrep.flag_l && flagTestL) {
+        if (regexec(&re, buffer, 0, NULL, 0) == 0 && flagsGrep.flag_l &&
+            flagTestL) {
           flagTestL = 0;
         }
         numberStr++;
