@@ -18,17 +18,18 @@ int main(int argc, char *argv[]) {
           break;
         }
         if (argv[optind + i][0] != '-' && argv[optind][0] != '-') {
-          numberOptind++;
+          if (argv[optind + i - 1][0] != '-' && argv[optind + i - 1][1] != 'f') {
+            numberOptind++;
+          }
         }
       }
     }
-
     // присвоение паттерна с флагом -е и без
     if (flagsGrep.flag_e == 0) {
       if (flagsGrep.flag_f == 0) {
         pattern = argv[optind];
       }
-    } else {
+    } else if (flagsGrep.flag_e) {
       pattern[strlen(pattern) - 1] = '\0';
     }
 
@@ -36,6 +37,8 @@ int main(int argc, char *argv[]) {
 
     // отработка grep без шалона <<  grep text file  >>
     if (flagsGrep.flag_e == 0) {
+      grepNoFlags(optind, argc, pattern, argv);
+    } else if (flagsGrep.flag_e) {
       grepNoFlags(optind, argc, pattern, argv);
     }
   }
@@ -89,7 +92,7 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
   char buffer[BUFFER_SIZE];
   int testingFiles = 0;
   int numberFiles = 0;
-  int numberArg;
+  int numberArg = 0;
 
   if (flagsGrep.flag_f && flagsGrep.flag_e == 0) {
     testingFiles = optind;
@@ -97,6 +100,9 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
   } else if (flagsGrep.flag_f == 0 && flagsGrep.flag_e == 0) {
     testingFiles = optind + 1;
     numberArg = optind + 1;
+  } else if (flagsGrep.flag_e) {
+    testingFiles = optind;
+    numberArg = optind;
   }
 
   // Считаем количество файлов после паттерна << GREP >>
@@ -109,12 +115,13 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
     flagsGrep.flag_i > 0
         ? regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB | REG_ICASE)
         : regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB);
+    // printf("file = %s\n", argv[numberArg]);
 
     FILE *fp;
     int numberStr = 1;
     int flagTestL = 1;
     int flagTestC = 0;
-    printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+    // printf("pattern %s\n", pattern);
 
     if ((fp = fopen(argv[numberArg], "r")) == NULL) {
       if (flagsGrep.flag_s == 0) {
@@ -124,8 +131,8 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
       // Проходимся по каждой строке в файле
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         int regexecTrue = regexec(&re, buffer, 0, NULL, 0);
-        // если находим потверждение то передаём данные в функции
 
+        // если находим потверждение то передаём данные в функции
         if (regexecTrue == 0 && flagsGrep.flag_v == 0 &&
             flagsGrep.flag_l == 0) {
           flagTraining(numberFiles, argv, buffer, numberStr, numberArg);
@@ -152,7 +159,7 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
     regfree(&re);
     fclose(fp);
   }
-  printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+  // printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 }
 
 //   отработка флага << F >>
@@ -171,7 +178,7 @@ void funcFlagF(char *fileName, char *pattern) {
     }
     textArg(buffer, pattern);
   }
-  pattern[strlen(pattern) - 1] = '\0';
+  pattern[strlen(pattern)] = '\0';
   fclose(fp);
 }
 
