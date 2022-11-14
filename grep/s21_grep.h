@@ -19,7 +19,7 @@ void flagsC(int testFiles, char *nameFile, int numberStrC);
 void flagcL(char *nameFile);
 void flagN(int numberStr, int n);
 void funcFlagF(char *fileName, char *pattern);
-void flagTraining(int test, char *argv[], char *buffer, int numberStr,
+void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
                   int numberArg);
 
 // void funcFlagO(char *pattern, int *numberO, char *buffer);
