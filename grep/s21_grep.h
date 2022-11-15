@@ -1,4 +1,5 @@
 
+
 #include <getopt.h>
 #include <limits.h>
 #include <regex.h>
@@ -20,15 +21,16 @@ void flagcL(char *nameFile);
 void flagN(int numberStr, int n);
 void funcFlagF(char *fileName, char *pattern);
 void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
-                  int numberArg);
+                  int numberArg, char *pattern);
+void flagO(char *buffer, char *pattern);
 
-// void funcFlagO(char *pattern, int *numberO, char *buffer);
-// void funcFlagE(char *argv[], int optind, int testFiles, char *pattern);
-// void flagPracticeTemplate(char *argv[], int optind, int numberStr,
-//                           int *numberStrC, int testFiles, char *buffer,
-//                           char *pattern, int *numberO);
+    // void funcFlagO(char *pattern, int *numberO, char *buffer);
+    // void funcFlagE(char *argv[], int optind, int testFiles, char *pattern);
+    // void flagPracticeTemplate(char *argv[], int optind, int numberStr,
+    //                           int *numberStrC, int testFiles, char *buffer,
+    //                           char *pattern, int *numberO);
 
-struct flags {
+    struct flags {
   int flag_e;
   int flag_i;
   int flag_v;

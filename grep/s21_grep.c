@@ -1,5 +1,6 @@
 #include "s21_grep.h"
 
+
 int main(int argc, char *argv[]) {
   int val;
   int test = 0;
@@ -18,7 +19,8 @@ int main(int argc, char *argv[]) {
           break;
         }
         if (argv[optind + i][0] != '-' && argv[optind][0] != '-') {
-          if (argv[optind + i - 1][0] != '-' && argv[optind + i - 1][1] != 'f') {
+          if (argv[optind + i - 1][0] != '-' &&
+              argv[optind + i - 1][1] != 'f') {
             numberOptind++;
           }
         }
@@ -110,6 +112,7 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
     if (argv[testingFiles][0] != '-' && flagsGrep.flag_e == 0) numberFiles++;
   }
 
+
   for (; numberArg < argc; numberArg++) {
     // Выбеоаем тип флагов под флаг I и без него
     flagsGrep.flag_i > 0
@@ -121,7 +124,6 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
     int numberStr = 1;
     int flagTestL = 1;
     int flagTestC = 0;
-    // printf("pattern %s\n", pattern);
 
     if ((fp = fopen(argv[numberArg], "r")) == NULL) {
       if (flagsGrep.flag_s == 0) {
@@ -131,14 +133,13 @@ void grepNoFlags(int optind, int argc, char *pattern, char *argv[]) {
       // Проходимся по каждой строке в файле
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         int regexecTrue = regexec(&re, buffer, 0, NULL, 0);
-
         // если находим потверждение то передаём данные в функции
         if (regexecTrue == 0 && flagsGrep.flag_v == 0 &&
             flagsGrep.flag_l == 0) {
-          flagTraining(numberFiles, argv, buffer, numberStr, numberArg);
+          flagTraining(numberFiles, argv, buffer, numberStr, numberArg, pattern);
         } else if (regexecTrue != 0 && flagsGrep.flag_v > 0 &&
                    flagsGrep.flag_l == 0) {
-          flagTraining(numberFiles, argv, buffer, numberStr, numberArg);
+          flagTraining(numberFiles, argv, buffer, numberStr, numberArg, pattern);
         }
         if (regexecTrue == 0 && flagsGrep.flag_c) {
           flagsGrep.flag_l ? flagTestC = 1 : flagTestC++;
@@ -178,7 +179,11 @@ void funcFlagF(char *fileName, char *pattern) {
     }
     textArg(buffer, pattern);
   }
-  pattern[strlen(pattern)] = '\0';
+  if (flagsGrep.flag_e) {
+    pattern[strlen(pattern)] = '\0';
+  } else if (!flagsGrep.flag_e) {
+    pattern[strlen(pattern) - 1] = '\0';
+  }
   fclose(fp);
 }
 
@@ -201,56 +206,21 @@ void flagN(int numberStr, int n) {
 
 // отработка флагов  <<  без >>  шаблона
 void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
-                  int numberArg) {
+                  int numberArg, char *pattern) {
   if (flagsGrep.flag_c == 0) {
     if (numberFiles > 1 && flagsGrep.flag_h == 0)
       printf("%s:", argv[numberArg]);
     flagN(numberStr, flagsGrep.flag_n);
-    fputs(buffer, stdout);
+
+    if (flagsGrep.flag_o && flagsGrep.flag_v == 0) {
+      flagO(buffer, pattern);
+    } else {
+      fputs(buffer, stdout);
+    }
+
+
     if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n') {
       printf("\n");
-    }
-  }
-}
-
-void funcFlagO(char *pattern, int *numberO, char *buffer) {
-  int i = 0;
-  int j = 0;
-  char stringArg[100][BUFFER_SIZE];
-  for (*numberO = 0; pattern[*numberO] != '\0'; *numberO = *numberO + 1) {
-    if (pattern[*numberO] == '|') {
-      i++;
-      j = 0;
-    } else {
-      stringArg[i][j] = pattern[*numberO];
-      j++;
-    }
-  }
-  *numberO = i;
-  for (int i = 0; i <= *numberO; i++) {
-    int j = 0;
-    int k = 0;
-    while (buffer[j] != '\0') {
-      if (flagsGrep.flag_i &&
-          (buffer[j] == stringArg[i][k] || buffer[j] == stringArg[i][k] - 32 ||
-           buffer[j] == stringArg[i][k] + 32)) {
-        printf("%c", buffer[j]);
-        k++;
-      } else if (buffer[j] == stringArg[i][k]) {
-        printf("%c", buffer[j]);
-        k++;
-      }
-      if (flagsGrep.flag_i && stringArg[i][k] == '\0' &&
-          (buffer[j] == stringArg[i][k - 1] ||
-           buffer[j] == stringArg[i][k - 1] - 32 ||
-           buffer[j] == stringArg[i][k - 1] + 32)) {
-        printf("\n");
-        k = 0;
-      } else if (stringArg[i][k] == '\0' && buffer[j] == stringArg[i][k - 1]) {
-        printf("\n");
-        k = 0;
-      }
-      j++;
     }
   }
 }
@@ -263,4 +233,46 @@ void textArg(char *optarg, char *pattern) {
     strcat(pattern, optarg);
     strcat(pattern, "|");
   }
+}
+
+void flagO(char *buffer, char *pattern) {
+  regex_t re;
+  // char buf[400];
+  regmatch_t pmatch[100];
+  int status = 1;
+  char *s;
+  s = buffer;
+
+  if (flagsGrep.flag_i) {
+    status = regcomp(&re, pattern, REG_EXTENDED | REG_ICASE);
+  } else if (!flagsGrep.flag_i) {
+    status = regcomp(&re, pattern, REG_EXTENDED);
+  }
+    
+  // if (status != 0) {
+  //   regerror(status, &re, buf, 120);
+  // }
+  if (status == 0 && flagsGrep.flag_v == 0) {
+    for (int i = 0;; i++) {
+      if (regexec(&re, s, 1, pmatch, 0) != 0) break;
+      printf("%.*s\n", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
+             s + pmatch[0].rm_so);
+      s += pmatch[0].rm_eo;
+    }
+  } 
+  
+  
+  // else if (status != 0 && flagsGrep.flag_v > 0) {
+  //   fputs(buffer, stdout);
+  // }
+
+  // if (status != 0) {
+  //   regerror(status, &re, buf, 120);
+  // }
+  // for (int i = 0;; i++) {
+  //   if (regexec(&re, s, 1, pmatch, 0) != 0) break;
+  //   printf("%.*s\n", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
+  //           s + pmatch[0].rm_so);
+  //   s += pmatch[0].rm_eo;
+  // }
 }
