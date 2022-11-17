@@ -32,20 +32,22 @@ int main(int argc, char *argv[]) {
 }
 
 void output(int argc, char *argv[]) {
-
-  // Проверка гетоптлонг 
   int status = 0;
-  // Проверка на количество аргуметнов
   int testArg = 1;
-  // Параметры, которые мы задаём для гетоптолнга
+  int amountFiles = 0;
   char *params = "e:ivclnhsf:o?";
-  // создаём строку паттерн
   char pattern[BUFFER_SIZE] = {0};
-
-  // проверка на количество аргументов
-
   if (argc > 1) {
-    // запускаем цикл, он выполняется пока не проверить всю входящую строку из майна
+    while ((status = getopt_long(argc, argv, params, 0, NULL)) != -1) {
+      switchCase(status, pattern);
+      if (flag.flag_e && argc == 2) {
+        testArg = 0;
+        break;
+      }
+    }
+    if (testArg) {
+      parser(pattern);
+    }
   }
 }
 
