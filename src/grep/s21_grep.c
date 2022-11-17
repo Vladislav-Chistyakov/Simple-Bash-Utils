@@ -25,6 +25,7 @@ struct flags *p_flags = &flag;
 void output(int argc, char *argv[]);
 void switchCase(int val, char *pattern);
 void parser(char *pattern, char *argv[]);
+void fileNumbers(char *argv[], int *amountFiles, int variant);
 void textArg(char *pattern);
 
 int main(int argc, char *argv[]) {
@@ -52,20 +53,55 @@ void output(int argc, char *argv[]) {
 }
 
 void parser(char *pattern, char *argv[]) {
+  // выбераем вариант сборки, от него будет зависеть прохождение по файлам
+  int variant = 0;
+  // количество файлов
+  int amountFiles = 0;
+  // если нет шаблона или файла для паттерна, то выбераем стандартную сборку
   if (!flag.flag_e & !flag.flag_f) {
     pattern = argv[optind];
+    variant = 1;
+    // посчитываем количество файлов
+    fileNumbers(argv, &amountFiles, variant);
   }
+  // иначе выбераем сборку по готовому паттерну
+  if (!variant) {
+    // посчитываем количество файлов
+    fileNumbers(argv, &amountFiles, variant);
+  }
+
+
+
+
   printf("%s", pattern);
 }
 
 // Создаём строку pattern
 void textArg(char *pattern) {
-
   if (pattern[0] == 0) {
     strcat(pattern, optarg);
   } else {
     strcat(pattern, "|");
     strcat(pattern, optarg);
+  }
+}
+
+// Счётчик файлов
+void fileNumbers(char *argv[], int *amountFiles, int variant) {
+  if (variant) {
+    for (int i = optind + 1; argv[i] != NULL; i++) {
+      if (argv[i][0] != '-' ||
+          (argv[i - 1][0] != '-' && argv[i - 1][1] != 'f')) {
+        *amountFiles = *amountFiles + 1;
+      }
+    }
+  } else if (!variant) {
+    for (int i = optind; argv[i] != NULL; i++) {
+      if (argv[i][0] != '-' ||
+          (argv[i - 1][0] != '-' && argv[i - 1][1] != 'f')) {
+        *amountFiles = *amountFiles + 1;
+      }
+    }
   }
 }
 
