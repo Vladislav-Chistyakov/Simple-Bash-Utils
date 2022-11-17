@@ -24,9 +24,11 @@ struct flags *p_flags = &flag;
 
 void output(int argc, char *argv[]);
 void switchCase(int val, char *pattern);
-void parser(char *pattern, char *argv[]);
+void parser(char *pattern, char *argv[], int argc);
 void fileNumbers(char *argv[], int *amountFiles, int variant);
 void textArg(char *pattern);
+void walking(char *argv[], int argc, int variant, int *amountFiles,
+             char *pattern);
 
 int main(int argc, char *argv[]) {
   output(argc, argv); 
@@ -47,12 +49,12 @@ void output(int argc, char *argv[]) {
       }
     }
     if (testArg) {
-      parser(pattern, argv);
+      parser(pattern, argv, argc);
     }
   }
 }
 
-void parser(char *pattern, char *argv[]) {
+void parser(char *pattern, char *argv[], int argc) {
   // выбераем вариант сборки, от него будет зависеть прохождение по файлам
   int variant = 0;
   // количество файлов
@@ -70,10 +72,24 @@ void parser(char *pattern, char *argv[]) {
     fileNumbers(argv, &amountFiles, variant);
   }
 
+  walking(argv, argc, variant, &amountFiles, pattern);
 
+  // printf("%s", pattern);
+}
 
-
-  printf("%s", pattern);
+// Функция отработки по файлам
+void walking(char *argv[], int argc, int variant, int *amountFiles,
+             char *pattern) {
+  printf("number %d\n", *amountFiles);
+  for (int i = 0; i < *amountFiles; i++) {
+    FILE *fp;
+    char buffer[BUFFER_SIZE] = {0};
+    if ((fp = fopen(argv[optind + variant + i], "r")) != NULL)  {
+      while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
+        fputs(buffer, stdout);
+      }
+    }
+  }
 }
 
 // Создаём строку pattern
