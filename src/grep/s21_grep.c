@@ -248,37 +248,38 @@ void funcFlagF(char *fileName, char *pattern) {
 }
 
 // отработка флага << O >>
-// void flagO(char *buffer, char *pattern) {
-//   regex_t re;
-//   regmatch_t pmatch[4024];
-//   int status = 1;
-//   char *s = buffer;
+void flagO(char *buffer, char *pattern) {
+  regex_t re;
+  regmatch_t pmatch[4024];
+  int status = 1;
+  char *s = buffer;
 
-//   if (flag.flag_i) {
-//     if ((status = regcomp(&re, pattern,
-//                           REG_EXTENDED | REG_NOSUB | REG_ICASE)) != 0) {
-//       printf("failed %d", status);
-//       regfree(&re);
-//     }
-//   } else if (!flag.flag_i) {
-//     if ((status = regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB)) != 0) {
-//       printf("failed %d", status);
-//       regfree(&re);
-//     }
-//   }
+  if (flag.flag_i) {
+    if ((status = regcomp(&re, pattern,
+                          REG_EXTENDED | REG_ICASE)) != 0) {
+      printf("failed %d", status);
+      regfree(&re);
+    }
+  } else if (!flag.flag_i) {
+    if ((status = regcomp(&re, pattern, REG_EXTENDED)) != 0) {
+      printf("failed %d", status);
+      regfree(&re);
+    }
+  }
 
-//   if (status == 0 && flag.flag_v == 0) {
-//     for (int i = 0;; i++) {
-//       if (regexec(&re, s, 1, pmatch, 0) != flag.flag_v) {
-//         break;
-//       }
-//       printf("%.*s\n", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
-//              s + pmatch[0].rm_so);
-//       s += pmatch[0].rm_eo;
-//       }
-//     }
-//   regfree(&re);
-// }
+  if (status == 0 && flag.flag_v == 0) {
+    int symbol = 0;
+    for (int i = 0; buffer[i] != '\0'; i++) {
+      if (regexec(&re, s, 1, pmatch, 0) != flag.flag_v) {
+        break;
+      } 
+      printf("%.*s\n", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
+             s + pmatch[0].rm_so);
+      s += pmatch[0].rm_eo;
+      }
+    }
+  regfree(&re);
+}
 
 // отработка флага << L >>
 void flagcL(char *nameFile) { printf("%s\n", nameFile); }
