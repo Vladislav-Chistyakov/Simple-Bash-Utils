@@ -32,9 +32,10 @@ void walking(char *argv[], int variant, int *amountFiles,
 void flagcL(char *nameFile);
 void flagsC(int testFiles, char *nameFile, int numberStrC);
 void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
-                  int numberArg);
+                  int numberArg, char *pattern);
 void flagN(int numberStr, int n);
 void funcFlagF(char *fileName, char *pattern);
+void flagO(char *buffer, char *pattern);
 
 int main(int argc, char *argv[]) {
   output(argc, argv); 
@@ -113,7 +114,8 @@ void walking(char *argv[], int variant, int *amountFiles,
             numberStrFlagC++;
           }
           if (!flag.flag_l) {
-              flagTraining(*amountFiles, argv, buffer, numberStr, optind + variant + i);
+            flagTraining(*amountFiles, argv, buffer, numberStr,
+                         optind + variant + i, pattern);
           } else {
             testL = 1;
           }
@@ -124,7 +126,7 @@ void walking(char *argv[], int variant, int *amountFiles,
             numberStrFlagC++;
           }
           if (!flag.flag_l) {
-              flagTraining(*amountFiles, argv, buffer, numberStr, optind + variant + i);
+              flagTraining(*amountFiles, argv, buffer, numberStr, optind + variant + i, pattern);
           } else {
             testL = 1;
           }
@@ -173,7 +175,7 @@ void fileNumbers(char *argv[], int *amountFiles, int variant) {
 }
 
 void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
-                  int numberArg) {
+                  int numberArg, char *pattern) {
   // проверка на флаг С
   if (flag.flag_c == 0) {
     // если число файлов больше одного
@@ -186,8 +188,7 @@ void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
 
     // проверка на флаг О
     if (flag.flag_o && flag.flag_v == 0) {
-      // flagO(buffer, pattern);
-      printf("flag O\n");
+      flagO(buffer, pattern);
     } else {
       // если всё прошло успешно, ты выводим строку
       fputs(buffer, stdout);
@@ -245,6 +246,39 @@ void funcFlagF(char *fileName, char *pattern) {
   }
   fclose(fp);
 }
+
+// отработка флага << O >>
+// void flagO(char *buffer, char *pattern) {
+//   regex_t re;
+//   regmatch_t pmatch[4024];
+//   int status = 1;
+//   char *s = buffer;
+
+//   if (flag.flag_i) {
+//     if ((status = regcomp(&re, pattern,
+//                           REG_EXTENDED | REG_NOSUB | REG_ICASE)) != 0) {
+//       printf("failed %d", status);
+//       regfree(&re);
+//     }
+//   } else if (!flag.flag_i) {
+//     if ((status = regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB)) != 0) {
+//       printf("failed %d", status);
+//       regfree(&re);
+//     }
+//   }
+
+//   if (status == 0 && flag.flag_v == 0) {
+//     for (int i = 0;; i++) {
+//       if (regexec(&re, s, 1, pmatch, 0) != flag.flag_v) {
+//         break;
+//       }
+//       printf("%.*s\n", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
+//              s + pmatch[0].rm_so);
+//       s += pmatch[0].rm_eo;
+//       }
+//     }
+//   regfree(&re);
+// }
 
 // отработка флага << L >>
 void flagcL(char *nameFile) { printf("%s\n", nameFile); }
