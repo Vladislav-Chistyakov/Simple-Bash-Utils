@@ -83,12 +83,25 @@ void walking(char *argv[], int argc, int variant, int *amountFiles,
   printf("number %d\n", *amountFiles);
   for (int i = 0; i < *amountFiles; i++) {
     FILE *fp;
+    regex_t re;
     char buffer[BUFFER_SIZE] = {0};
+
+    if (flag.flag_i) {
+      regcomp(&re, pattern, REG_EXTENDED | REG_ICASE);
+    } else {
+      regcomp(&re, pattern, REG_EXTENDED);
+    }
+
+
     if ((fp = fopen(argv[optind + variant + i], "r")) != NULL)  {
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
-        fputs(buffer, stdout);
+        if (regexec(&re, buffer, 0, NULL, 0) == 0) {
+          fputs(buffer, stdout);
+        }
       }
     }
+    fclose(fp);
+    regfree(&re);
   }
 }
 
