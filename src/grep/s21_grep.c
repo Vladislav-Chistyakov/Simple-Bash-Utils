@@ -24,11 +24,13 @@ struct flags *p_flags = &flag;
 
 void output(int argc, char *argv[]);
 void switchCase(int val, char *pattern);
-void parser(char *pattern, char *argv[], int argc);
+void parser(char *pattern, char *argv[]);
 void fileNumbers(char *argv[], int *amountFiles, int variant);
 void textArg(char *pattern);
-void walking(char *argv[], int argc, int variant, int *amountFiles,
+void walking(char *argv[], int variant, int *amountFiles,
              char *pattern);
+void flagcL(char *nameFile);
+void flagsC(int testFiles, char *nameFile, int numberStrC);
 
 int main(int argc, char *argv[]) {
   output(argc, argv); 
@@ -49,12 +51,12 @@ void output(int argc, char *argv[]) {
       }
     }
     if (testArg) {
-      parser(pattern, argv, argc);
+      parser(pattern, argv);
     }
   }
 }
 
-void parser(char *pattern, char *argv[], int argc) {
+void parser(char *pattern, char *argv[]) {
   // выбераем вариант сборки, от него будет зависеть прохождение по файлам
   int variant = 0;
   // количество файлов
@@ -72,18 +74,24 @@ void parser(char *pattern, char *argv[], int argc) {
     fileNumbers(argv, &amountFiles, variant);
   }
 
-  walking(argv, argc, variant, &amountFiles, pattern);
+  walking(argv, variant, &amountFiles, pattern);
 
   // printf("%s", pattern);
 }
 
 // Функция отработки по файлам
-void walking(char *argv[], int argc, int variant, int *amountFiles,
+void walking(char *argv[], int variant, int *amountFiles,
              char *pattern) {
-  printf("number %d\n", *amountFiles);
   for (int i = 0; i < *amountFiles; i++) {
     FILE *fp;
     regex_t re;
+    // Проверка для L
+    int testL = 0;
+    // Подсчёт количества совпадений для С
+    int numberStrFlagC = 0;
+    // Подсчёт количества строк
+    int numberStr = 1;
+
     char buffer[BUFFER_SIZE] = {0};
 
     if (flag.flag_i) {
@@ -95,9 +103,36 @@ void walking(char *argv[], int argc, int variant, int *amountFiles,
 
     if ((fp = fopen(argv[optind + variant + i], "r")) != NULL)  {
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
-        if (regexec(&re, buffer, 0, NULL, 0) == 0) {
-          fputs(buffer, stdout);
+        if (regexec(&re, buffer, 0, NULL, 0) == 0 && flag.flag_v == 0) {
+          if (flag.flag_c && flag.flag_l) {
+            numberStrFlagC = 1;
+          } else if (flag.flag_c && !flag.flag_l) {
+            numberStrFlagC++;
+          }
+          if (!flag.flag_l) {
+              fputs(buffer, stdout);
+          } else {
+            testL = 1;
+          }
+        } else if (regexec(&re, buffer, 0, NULL, 0) != 0 && flag.flag_v) {
+          if (flag.flag_c && flag.flag_l) {
+            numberStrFlagC = 1;
+          } else if (flag.flag_c && !flag.flag_l) {
+            numberStrFlagC++;
+          }
+          if (!flag.flag_l) {
+              fputs(buffer, stdout);
+          } else {
+            testL = 1;
+          }
         }
+        numberStr++;
+      }
+      if (flag.flag_c) {
+        flagsC(*amountFiles, argv[optind + variant + i], numberStrFlagC);
+      }
+      if (flag.flag_l && testL) {
+        flagcL(argv[optind + variant + i]);
       }
     }
     fclose(fp);
@@ -133,6 +168,18 @@ void fileNumbers(char *argv[], int *amountFiles, int variant) {
     }
   }
 }
+
+// отработка флага << C >>
+void flagsC(int testFiles, char *nameFile, int numberStrC) {
+  if (testFiles > 1 && flag.flag_h == 0) {
+    printf("%s:%d\n", nameFile, numberStrC);
+  } else {
+    printf("%d\n", numberStrC);
+  }
+}
+
+// отработка флага << L >>
+void flagcL(char *nameFile) { printf("%s\n", nameFile); }
 
 // Свич Кейс
 void switchCase(int val, char *pattern) {
