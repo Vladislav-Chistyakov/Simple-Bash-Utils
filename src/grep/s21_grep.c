@@ -24,7 +24,8 @@ struct flags *p_flags = &flag;
 
 void output(int argc, char *argv[]);
 void switchCase(int val, char *pattern);
-void parser(char *pattern);
+void parser(char *pattern, char *argv[]);
+void textArg(char *pattern);
 
 int main(int argc, char *argv[]) {
   output(argc, argv); 
@@ -34,7 +35,6 @@ int main(int argc, char *argv[]) {
 void output(int argc, char *argv[]) {
   int status = 0;
   int testArg = 1;
-  int amountFiles = 0;
   char *params = "e:ivclnhsf:o?";
   char pattern[BUFFER_SIZE] = {0};
   if (argc > 1) {
@@ -46,13 +46,27 @@ void output(int argc, char *argv[]) {
       }
     }
     if (testArg) {
-      parser(pattern);
+      parser(pattern, argv);
     }
   }
 }
 
-void parser(char *pattern) {
-  printf("!!!pars  %s", pattern);
+void parser(char *pattern, char *argv[]) {
+  if (!flag.flag_e & !flag.flag_f) {
+    pattern = argv[optind];
+  }
+  printf("%s", pattern);
+}
+
+// Создаём строку pattern
+void textArg(char *pattern) {
+
+  if (pattern[0] == 0) {
+    strcat(pattern, optarg);
+  } else {
+    strcat(pattern, "|");
+    strcat(pattern, optarg);
+  }
 }
 
 // Свич Кейс
@@ -60,9 +74,7 @@ void switchCase(int val, char *pattern) {
   switch (val) {
     case 'e':
       p_flags->flag_e = 1;
-      printf("EEEE\n");
-      pattern[0] = 'e';
-      // textArg(optarg, pattern);
+      textArg(pattern);
       break;
     case 'i':
       p_flags->flag_i = 1;
