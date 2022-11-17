@@ -31,6 +31,9 @@ void walking(char *argv[], int variant, int *amountFiles,
              char *pattern);
 void flagcL(char *nameFile);
 void flagsC(int testFiles, char *nameFile, int numberStrC);
+void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
+                  int numberArg);
+void flagN(int numberStr, int n);
 
 int main(int argc, char *argv[]) {
   output(argc, argv); 
@@ -91,7 +94,7 @@ void walking(char *argv[], int variant, int *amountFiles,
     int numberStrFlagC = 0;
     // Подсчёт количества строк
     int numberStr = 1;
-
+    // Создаём буффер для записи строки
     char buffer[BUFFER_SIZE] = {0};
 
     if (flag.flag_i) {
@@ -110,7 +113,7 @@ void walking(char *argv[], int variant, int *amountFiles,
             numberStrFlagC++;
           }
           if (!flag.flag_l) {
-              fputs(buffer, stdout);
+              flagTraining(*amountFiles, argv, buffer, numberStr, optind + variant + i);
           } else {
             testL = 1;
           }
@@ -121,7 +124,7 @@ void walking(char *argv[], int variant, int *amountFiles,
             numberStrFlagC++;
           }
           if (!flag.flag_l) {
-              fputs(buffer, stdout);
+              flagTraining(*amountFiles, argv, buffer, numberStr, optind + variant + i);
           } else {
             testL = 1;
           }
@@ -166,6 +169,34 @@ void fileNumbers(char *argv[], int *amountFiles, int variant) {
         *amountFiles = *amountFiles + 1;
       }
     }
+  }
+}
+
+void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
+                  int numberArg) {
+  if (flag.flag_c == 0) {
+    if (numberFiles > 1 && flag.flag_h == 0) {
+      printf("%s:", argv[numberArg]);
+    }
+    flagN(numberStr, flag.flag_n);
+
+    if (flag.flag_o && flag.flag_v == 0) {
+      // flagO(buffer, pattern);
+      printf("flag O\n");
+    } else {
+      fputs(buffer, stdout);
+    }
+
+    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n') {
+      printf("\n");
+    }
+  }
+}
+
+// отработка флага N
+void flagN(int numberStr, int n) {
+  if (n) {
+    printf("%d:", numberStr);
   }
 }
 
