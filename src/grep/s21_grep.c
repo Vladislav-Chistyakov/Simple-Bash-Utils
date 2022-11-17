@@ -34,6 +34,7 @@ void flagsC(int testFiles, char *nameFile, int numberStrC);
 void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
                   int numberArg);
 void flagN(int numberStr, int n);
+void funcFlagF(char *fileName, char *pattern);
 
 int main(int argc, char *argv[]) {
   output(argc, argv); 
@@ -103,7 +104,6 @@ void walking(char *argv[], int variant, int *amountFiles,
       regcomp(&re, pattern, REG_EXTENDED);
     }
 
-
     if ((fp = fopen(argv[optind + variant + i], "r")) != NULL)  {
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         if (regexec(&re, buffer, 0, NULL, 0) == 0 && flag.flag_v == 0) {
@@ -145,12 +145,12 @@ void walking(char *argv[], int variant, int *amountFiles,
 
 // Создаём строку pattern
 void textArg(char *pattern) {
-  if (pattern[0] == 0) {
-    strcat(pattern, optarg);
-  } else {
-    strcat(pattern, "|");
-    strcat(pattern, optarg);
-  }
+    if (pattern[0] == 0) {
+      strcat(pattern, optarg);
+    } else {
+      strcat(pattern, "|");
+      strcat(pattern, optarg);
+    }
 }
 
 // Счётчик файлов
@@ -174,19 +174,25 @@ void fileNumbers(char *argv[], int *amountFiles, int variant) {
 
 void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
                   int numberArg) {
+  // проверка на флаг С
   if (flag.flag_c == 0) {
+    // если число файлов больше одного
     if (numberFiles > 1 && flag.flag_h == 0) {
+      // то выводится имя файла в stdout
       printf("%s:", argv[numberArg]);
     }
+    // Так же при флаге N выводится номер строки
     flagN(numberStr, flag.flag_n);
 
+    // проверка на флаг О
     if (flag.flag_o && flag.flag_v == 0) {
       // flagO(buffer, pattern);
       printf("flag O\n");
     } else {
+      // если всё прошло успешно, ты выводим строку
       fputs(buffer, stdout);
     }
-
+    // если это была последняя строка, то делаем перенос
     if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] != '\n') {
       printf("\n");
     }
@@ -207,6 +213,37 @@ void flagsC(int testFiles, char *nameFile, int numberStrC) {
   } else {
     printf("%d\n", numberStrC);
   }
+}
+
+// отработка флага << F >>
+
+void funcFlagF(char *fileName, char *pattern) {
+  FILE *fp;
+  // printf("@!#");
+  char buffer[BUFFER_SIZE];
+  if ((fp = fopen(fileName, "r")) == NULL) {
+    if (flag.flag_s == 0) {
+      perror("No FILE");
+    }
+  }
+  while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
+    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] == '\n')
+    {
+      buffer[strlen(buffer) - 1] = '\0';
+    }
+    if (pattern[0] == 0) {
+      strcat(pattern, buffer);
+    } else {
+      strcat(pattern, "|");
+      strcat(pattern, buffer);
+    }
+  }
+  if (flag.flag_e) {
+    pattern[strlen(pattern)] = '\0';
+  } else if (!flag.flag_e) {
+    pattern[strlen(pattern) - 1] = '\0';
+  }
+  fclose(fp);
 }
 
 // отработка флага << L >>
@@ -242,8 +279,7 @@ void switchCase(int val, char *pattern) {
       break;
     case 'f':
       p_flags->flag_f = 1;
-      // funcFlagF(optarg, pattern);
-      printf("SFFFFF\n");
+      funcFlagF(optarg, pattern);
       break;
     case 'o':
       p_flags->flag_o = 1;
