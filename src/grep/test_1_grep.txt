@@ -1,4 +1,4 @@
-// Copyright 2022 tyeneala@student.21-school.ru
+
 #include "./s21_string.h"
 #include <stdlib.h>
 

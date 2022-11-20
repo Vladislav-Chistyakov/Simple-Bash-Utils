@@ -1,44 +1,7 @@
-#include <getopt.h>
-#include <regex.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#define BUFFER_SIZE 512
-
-struct flags {
-  int flag_e;
-  int flag_i;
-  int flag_v;
-  int flag_c;
-  int flag_l;
-  int flag_n;
-  int flag_h;
-  int flag_s;
-  int flag_f;
-  int flag_o;
-  int flag_error;
-};
-struct flags flag = {0};
-struct flags *p_flags = &flag;
-
-void output(int argc, char *argv[]);
-void switchCase(int val, char *pattern);
-void parser(char *pattern, char *argv[]);
-void fileNumbers(char *argv[], int *amountFiles, int variant);
-void textArg(char *pattern);
-void walking(char *argv[], int variant, int *amountFiles,
-             char *pattern);
-void flagcL(char *nameFile);
-void flagsC(int testFiles, char *nameFile, int numberStrC);
-void flagTraining(int numberFiles, char *argv[], char *buffer, int numberStr,
-                  int numberArg, char *pattern);
-void flagN(int numberStr, int n);
-void funcFlagF(char *fileName, char *pattern);
-void flagO(char *buffer, char *pattern);
+#include "s21_grep.h"
 
 int main(int argc, char *argv[]) {
-  output(argc, argv); 
+  output(argc, argv);
   return 0;
 }
 
@@ -47,7 +10,7 @@ void output(int argc, char *argv[]) {
   int testArg = 1;
   char *params = "e:ivclnhsf:o?";
   char pattern[BUFFER_SIZE] = {0};
-  if (argc > 1) {
+  if (argc > 2) {
     while ((status = getopt_long(argc, argv, params, 0, NULL)) != -1) {
       switchCase(status, pattern);
       if (flag.flag_e && argc == 2) {
@@ -55,6 +18,14 @@ void output(int argc, char *argv[]) {
         break;
       }
     }
+    if ((flag.flag_e || flag.flag_f) && argc < 4) {
+      testArg = 0;
+    }
+
+    if ((!flag.flag_e && !flag.flag_f) && argc < 3) {
+      testArg = 0;
+    }
+
     if (testArg) {
       parser(pattern, argv);
     }
@@ -78,15 +49,11 @@ void parser(char *pattern, char *argv[]) {
     // посчитываем количество файлов
     fileNumbers(argv, &amountFiles, variant);
   }
-
   walking(argv, variant, &amountFiles, pattern);
-
-  // printf("%s", pattern);
 }
 
 // Функция отработки по файлам
-void walking(char *argv[], int variant, int *amountFiles,
-             char *pattern) {
+void walking(char *argv[], int variant, int *amountFiles, char *pattern) {
   for (int i = 0; i < *amountFiles; i++) {
     FILE *fp;
     regex_t re;
@@ -98,14 +65,12 @@ void walking(char *argv[], int variant, int *amountFiles,
     int numberStr = 1;
     // Создаём буффер для записи строки
     char buffer[BUFFER_SIZE] = {0};
-
     if (flag.flag_i) {
       regcomp(&re, pattern, REG_EXTENDED | REG_ICASE);
     } else {
       regcomp(&re, pattern, REG_EXTENDED);
     }
-
-    if ((fp = fopen(argv[optind + variant + i], "r")) != NULL)  {
+    if ((fp = fopen(argv[optind + variant + i], "r")) != NULL) {
       while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         if (regexec(&re, buffer, 0, NULL, 0) == 0 && flag.flag_v == 0) {
           if (flag.flag_c && flag.flag_l) {
@@ -126,7 +91,8 @@ void walking(char *argv[], int variant, int *amountFiles,
             numberStrFlagC++;
           }
           if (!flag.flag_l) {
-              flagTraining(*amountFiles, argv, buffer, numberStr, optind + variant + i, pattern);
+            flagTraining(*amountFiles, argv, buffer, numberStr,
+                         optind + variant + i, pattern);
           } else {
             testL = 1;
           }
@@ -139,20 +105,21 @@ void walking(char *argv[], int variant, int *amountFiles,
       if (flag.flag_l && testL) {
         flagcL(argv[optind + variant + i]);
       }
+      fclose(fp);
     }
-    fclose(fp);
     regfree(&re);
   }
 }
 
 // Создаём строку pattern
 void textArg(char *pattern) {
-    if (pattern[0] == 0) {
-      strcat(pattern, optarg);
-    } else {
-      strcat(pattern, "|");
-      strcat(pattern, optarg);
-    }
+  if (pattern[0] == 0) {
+    strcat(pattern, optarg);
+    // strcat(pattern, "|");
+  } else {
+    strcat(pattern, "|");
+    strcat(pattern, optarg);
+  }
 }
 
 // Счётчик файлов
@@ -220,7 +187,6 @@ void flagsC(int testFiles, char *nameFile, int numberStrC) {
 
 void funcFlagF(char *fileName, char *pattern) {
   FILE *fp;
-  // printf("@!#");
   char buffer[BUFFER_SIZE];
   if ((fp = fopen(fileName, "r")) == NULL) {
     if (flag.flag_s == 0) {
@@ -228,8 +194,7 @@ void funcFlagF(char *fileName, char *pattern) {
     }
   }
   while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
-    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] == '\n')
-    {
+    if (buffer[strlen(buffer)] == '\0' && buffer[strlen(buffer) - 1] == '\n') {
       buffer[strlen(buffer) - 1] = '\0';
     }
     if (pattern[0] == 0) {
@@ -255,8 +220,7 @@ void flagO(char *buffer, char *pattern) {
   char *s = buffer;
 
   if (flag.flag_i) {
-    if ((status = regcomp(&re, pattern,
-                          REG_EXTENDED | REG_ICASE)) != 0) {
+    if ((status = regcomp(&re, pattern, REG_EXTENDED | REG_ICASE)) != 0) {
       printf("failed %d", status);
       regfree(&re);
     }
@@ -268,16 +232,15 @@ void flagO(char *buffer, char *pattern) {
   }
 
   if (status == 0 && flag.flag_v == 0) {
-    int symbol = 0;
     for (int i = 0; buffer[i] != '\0'; i++) {
       if (regexec(&re, s, 1, pmatch, 0) != flag.flag_v) {
         break;
-      } 
+      }
       printf("%.*s\n", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
              s + pmatch[0].rm_so);
       s += pmatch[0].rm_eo;
-      }
     }
+  }
   regfree(&re);
 }
 
@@ -321,7 +284,7 @@ void switchCase(int val, char *pattern) {
       break;
     case '?':
     default:
-      fprintf(stderr, "Флаг не найден\n");
+      perror("No flag");
       exit(1);
   }
 }

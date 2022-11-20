@@ -1,28 +1,4 @@
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "functions_cat.c"
-#include "functions_cat.h"
-#include "output.c"
-#include "output.h"
-
-// структура для записи найденных флагов
-struct flags {
-  int flag_b;
-  int flag_s;
-  int flag_n;
-  int flag_e;
-  int flag_t;
-  int flag_v;
-};
-struct flags flagsCat = {0};
-struct flags *p_flags = &flagsCat;
-static struct option long_options[] = {
-    {"number-nonblank", 0, 0, 'b'},
-    {"number", 0, 0, 'n'},
-    {"squeeze-blank)", 0, 0, 's'},
-};
+#include "s21_cat.h"
 
 int main(int argc, char *argv[]) {
   int val;
@@ -63,6 +39,12 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+  // исполняющая функция для отработки CAT
+  catFunc(argc, argv);
+  return 0;
+}
+
+void catFunc(int argc, char *argv[]) {
   // цикл для возможности реализации CAT для нескольких файлов
   while (optind < argc) {
     int argFile = optind;
@@ -110,5 +92,4 @@ int main(int argc, char *argv[]) {
     fclose(fp);
     optind++;
   }
-  return 0;
 }

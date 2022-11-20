@@ -1,5 +1,5 @@
 GCC = gcc
-GCC1 = gcc -c -Wall -Werror -Wextra
+GCC1 = gcc -std=c11 -c -Wall -Werror -Wextra
 
 all : s21_grep
 
@@ -8,7 +8,7 @@ s21_grep : s21_grep.o
 	rm -rf *.o
 
 s21_grep.o : s21_grep.c s21_grep.h
-	$(GCC) s21_grep.c -c
+	$(GCC1) s21_grep.c -c
 
 clean :
 	rm -rf *.o s21_grep

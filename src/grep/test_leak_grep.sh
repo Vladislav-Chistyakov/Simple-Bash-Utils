@@ -21,7 +21,7 @@ declare -a extra=(
 "-n for test_1_grep.txt test_2_grep.txt"
 "-n for test_1_grep.txt"
 "-n -e ^\} test_1_grep.txt"
-"-c -e /\ test_1_grep.txt"
+"-c -e \/ test_1_grep.txt"
 "-ce ^int test_1_grep.txt test_2_grep.txt"
 "-e ^int test_1_grep.txt"
 "-nivh = test_1_grep.txt test_2_grep.txt"

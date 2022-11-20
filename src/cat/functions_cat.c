@@ -1,3 +1,4 @@
+// Отработка флага << S >>
 void funcFlagS(int *testingFlags, int *stringNew, char simb, int numberSimbol) {
   if (*stringNew == 1 && numberSimbol == 1) {
     *stringNew = 2;
@@ -12,6 +13,7 @@ void funcFlagS(int *testingFlags, int *stringNew, char simb, int numberSimbol) {
   }
 }
 
+// Отработка флага << N >>
 void funcFlagN(int numberSimbol, int flagS, int *number, int examS,
                char oldSimb) {
   if ((oldSimb == '\n' || numberSimbol == 1) && !flagS) {
@@ -25,6 +27,7 @@ void funcFlagN(int numberSimbol, int flagS, int *number, int examS,
   }
 }
 
+// Отработка флага << B >>
 void funcFlagB(int numberSimbol, int flagS, int *number, int examS,
                char oldSimb, char simb) {
   if (!flagS && (numberSimbol == 1 || oldSimb == '\n') && simb != '\n') {
@@ -39,6 +42,7 @@ void funcFlagB(int numberSimbol, int flagS, int *number, int examS,
   }
 }
 
+// Отработка флага << E >>
 void funcFlagE(int flagS, char simb, int examS) {
   if (!flagS && simb == '\n') {
     printf("$");
@@ -47,10 +51,12 @@ void funcFlagE(int flagS, char simb, int examS) {
   }
 }
 
+// Отработка флага << T >>
 void funcFlagT(char simb, int *examT) {
   if (simb == 9) *examT = 1;
 }
 
+// Отработка флага << V >>
 void funcFlagV(char simb, int *examV) {
   if (simb >= 0 && simb != 9 && simb != 10 && simb < 32) {
     printf("^%c", simb + 64);
